@@ -21,11 +21,17 @@ with col2:
     sell_year = st.number_input("Sell after X years", 1, term_years, 10)
     sell_cost_pct = st.number_input("Selling Costs (%)", 0.0, 20.0, 6.0) / 100
 
+# Custom PMT function
+def pmt(rate, nper, pv):
+    if rate == 0:
+        return -(pv / nper)
+    return -(pv * rate * (1 + rate)**nper) / ((1 + rate)**nper - 1)
+
 # Amortization function
 def amortization(loan, rate, term, extra_monthly=0, lump_sum=0):
     monthly_rate = rate / 12
     months = term * 12
-    payment = np.pmt(monthly_rate, months, -loan)
+    payment = pmt(monthly_rate, months, loan)
     balance = loan
     schedule = []
     for m in range(1, months+1):
