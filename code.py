@@ -63,9 +63,13 @@ prepay_interest_after_tax = prepay_interest * (1 - mortgage_tax_shield)
 def future_value(pmt, rate, nper):
     return pmt * (((1 + rate)**nper - 1) / rate) if rate > 0 else pmt * nper
 
-months_saved = len(base_df) - len(prepay_df)
-investment_monthly = extra_payment if extra_payment > 0 else 0
-investment_value = future_value(investment_monthly, (inv_return - tax_drag)/12, sell_year*12)
+monthly_invest = extra_payment
+months_invest = sell_year * 12
+investment_value = future_value(monthly_invest, (inv_return - tax_drag)/12, months_invest)
+
+# Add lump sum to investments if choosing "invest" strategy
+if lump_sum > 0:
+    investment_value += lump_sum * (1 + (inv_return - tax_drag))**sell_year
 
 # Equity at sale
 appreciation_rates = [-0.02, 0.00, 0.02, 0.05]
@@ -84,7 +88,7 @@ sale_df = pd.DataFrame(sale_results, columns=["Appreciation", "Net Worth (Invest
 
 # Output
 st.subheader("Summary")
-st.write(f"**Months Saved:** {months_saved}")
+st.write(f"**Months Saved:** {len(base_df) - len(prepay_df)}")
 st.write(f"**Interest Saved:** ${base_interest - prepay_interest:,.0f}")
 st.write(f"**After-tax Interest Saved:** ${base_interest_after_tax - prepay_interest_after_tax:,.0f}")
 
