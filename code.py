@@ -102,11 +102,11 @@ with tabs[0]:
 with tabs[1]:
     st.dataframe(prepay_df)
 
-import matplotlib.pyplot as plt
-fig, ax = plt.subplots()
-ax.plot(base_df["Month"], base_df["Balance"], label="Baseline")
-ax.plot(prepay_df["Month"], prepay_df["Balance"], label="Prepay")
-ax.set_xlabel("Month")
-ax.set_ylabel("Balance")
-ax.legend()
-st.pyplot(fig)
+# Plot loan balances
+chart_df = pd.DataFrame({
+    "Month": base_df["Month"],
+    "Baseline Balance": base_df["Balance"]
+})
+chart_df = chart_df.merge(prepay_df[["Month", "Balance"]].rename(columns={"Balance": "Prepay Balance"}), on="Month", how="outer")
+chart_df = chart_df.fillna(method="ffill")
+st.line_chart(chart_df.set_index("Month"))
