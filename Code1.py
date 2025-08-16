@@ -40,8 +40,8 @@ with col2:
 def pmt(rate, nper, pv):
     """Monthly payment for a loan."""
     if rate == 0:
-        return -(pv / nper)
-    return -(pv * rate * (1 + rate)**nper) / ((1 + rate)**nper - 1)
+        return (pv / nper)
+    return (pv * rate * (1 + rate)**nper) / ((1 + rate)**nper - 1)
 
 # ----------------------------
 # Core amortization with tax logic
