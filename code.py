@@ -41,18 +41,21 @@ def pmt(rate, nper, pv):
     return (pv * rate * (1 + rate)**nper) / ((1 + rate)**nper - 1) # positive
 
 # Amortization function
-def amortization(loan, rate, term, extra_monthly=0, lump_sum=0, lump_month=1):
+def amortization_with_tax(
+    loan, rate, term, extra_monthly=0, lump_sum=0, lump_month=1,
+    tax_rate=0.24, standard_deduction=14600, other_itemized=0
+):
     import pandas as pd
-    
+
     monthly_rate = rate / 12
     months = term * 12
-    payment = pmt(monthly_rate, months, loan)  # keep negative for PMT convention
+    payment = pmt(monthly_rate, months, loan)  # negative by convention
     balance = loan
     schedule = []
 
     for m in range(1, months + 1):
         interest = balance * monthly_rate
-        principal = payment - interest  # scheduled principal only
+        principal = -payment - interest  # scheduled principal only
         extra = 0
 
         # Lump sum in chosen month
@@ -67,7 +70,7 @@ def amortization(loan, rate, term, extra_monthly=0, lump_sum=0, lump_month=1):
         if principal + extra > balance:
             extra = balance - principal
             if extra < 0:
-                principal += extra  # reduce principal instead if extra goes negative
+                principal += extra
                 extra = 0
 
         balance -= principal + extra
@@ -83,8 +86,42 @@ def amortization(loan, rate, term, extra_monthly=0, lump_sum=0, lump_month=1):
         if balance <= 0:
             break
 
-    return pd.DataFrame(schedule, columns=["Month", "Interest", "Principal", "Extra", "Balance"])
+    df = pd.DataFrame(schedule, columns=["Month", "Interest", "Principal", "Extra", "Balance"])
 
+    # Add year column
+    df["Year"] = ((df["Month"] - 1) // 12) + 1
+
+    # Annual roll‑up
+    annual = df.groupby("Year").agg({
+        "Interest": "sum",
+        "Principal": "sum",
+        "Extra": "sum"
+    }).reset_index()
+
+    # Tax benefit calculation
+    deduction_type = []
+    tax_savings = []
+    after_tax_cost = []
+
+    for _, row in annual.iterrows():
+        MI = row["Interest"]
+        total_itemized = other_itemized + MI
+        if total_itemized > standard_deduction:
+            deduction_type.append("Itemized")
+            deductible = max(0, min(MI, total_itemized - standard_deduction))
+            savings = deductible * tax_rate
+        else:
+            deduction_type.append("Standard")
+            savings = 0
+        tax_savings.append(savings)
+        after_tax_cost.append((row["Interest"] + row["Principal"] + row["Extra"]) - savings)
+
+    annual["Deduction_Type"] = deduction_type
+    annual["Tax_Savings"] = tax_savings
+    annual["After_Tax_Cost"] = after_tax_cost
+    annual["Cumulative_After_Tax_Cost"] = annual["After_Tax_Cost"].cumsum()
+
+    return df, annual
 def add_year_column(df: pd.DataFrame) -> pd.DataFrame:
     d = df.copy()
     d["Year"] = ((d["Month"] - 1) // 12) + 1
