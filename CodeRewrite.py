@@ -96,7 +96,7 @@ prepay = amortization_with_tax(loan, rate, years, tax_rate, extra_monthly, lump_
 
 # Sale price projection
 sale_month = sale_year * 12
-home_value = loan * (1 + appreciation)**sale_year
+home_value = loan * (1 + appreciation) * sale_year
 
 # Net worth
 nw_base = net_worth_at_sale(base, sale_month, home_value, invest_rate)
