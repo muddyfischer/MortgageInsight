@@ -17,7 +17,14 @@ with col1:
 with col2:
     inv_return = st.number_input("Investment Return (%)", 0.0, 20.0, 6.0) / 100
     tax_drag = st.number_input("Investment Tax Drag (%)", 0.0, 20.0, 1.0) / 100
+     # New: helper controls
+    use_auto_shield = st.checkbox("Estimate mortgage tax shield automatically", value=True)
+    tax_bracket = st.number_input("Marginal Tax Rate (%)", 0.0, 60.0, 24.0) / 100
+    standard_deduction = st.number_input("Standard Deduction ($)", 0, 500000, 0)
+    other_itemized = st.number_input("Other Itemized Deductions (excluding mortgage interest) ($)", 0, 1000000, 0)
+     # Keep your manual override if helper is off
     mortgage_tax_shield = st.number_input("Mortgage Interest Tax Shield (%)", 0.0, 50.0, 0.0) / 100
+    
     sell_year = st.number_input("Sell after X years", 1, term_years, 10)
     sell_cost_pct = st.number_input("Selling Costs (%)", 0.0, 20.0, 6.0) / 100
 
@@ -49,6 +56,40 @@ def amortization(loan, rate, term, extra_monthly=0, lump_sum=0):
             break
     return pd.DataFrame(schedule, columns=["Month", "Interest", "Principal", "Balance"])
 
+def add_year_column(df: pd.DataFrame) -> pd.DataFrame:
+    d = df.copy()
+    d["Year"] = ((d["Month"] - 1) // 12) + 1
+    return d
+
+def after_tax_interest_helper(df: pd.DataFrame, tax_rate: float, std_ded: float, other_itemized: float) -> float:
+    """
+    Sum after-tax mortgage interest across years using itemize-vs-standard rule.
+    """
+    if df.empty:
+        return 0.0
+    d = add_year_column(df)
+    annual = d.groupby("Year")["Interest"].sum().reset_index()
+    after_tax_total = 0.0
+    for _, row in annual.iterrows():
+        MI = float(row["Interest"])
+        if MI <= 0:
+            continue
+        deductible = max(0.0, min(MI, other_itemized + MI - std_ded))
+        shield_dollars = tax_rate * deductible
+        after_tax_total += MI - shield_dollars
+    return after_tax_total
+
+def effective_avg_shield_rate(df: pd.DataFrame, tax_rate: float, std_ded: float, other_itemized: float) -> float:
+    """
+    Weighted-average effective tax shield rate across the whole schedule.
+    """
+    total_MI = float(df["Interest"].sum())
+    if total_MI <= 0:
+        return 0.0
+    after_tax = after_tax_interest_helper(df, tax_rate, std_ded, other_itemized)
+    eff_rate = 1.0 - (after_tax / total_MI)
+    return max(0.0, min(1.0, eff_rate))
+
 # Run scenarios
 base_df = amortization(loan_amount, annual_rate, term_years)
 prepay_df = amortization(loan_amount, annual_rate, term_years, extra_payment, lump_sum)
@@ -56,8 +97,18 @@ prepay_df = amortization(loan_amount, annual_rate, term_years, extra_payment, lu
 # Interest savings (after tax)
 base_interest = base_df["Interest"].sum()
 prepay_interest = prepay_df["Interest"].sum()
-base_interest_after_tax = base_interest * (1 - mortgage_tax_shield)
-prepay_interest_after_tax = prepay_interest * (1 - mortgage_tax_shield)
+
+if use_auto_shield:
+    base_interest_after_tax = after_tax_interest_helper(base_df, tax_bracket, standard_deduction, other_itemized)
+    prepay_interest_after_tax = after_tax_interest_helper(prepay_df, tax_bracket, standard_deduction, other_itemized)
+
+    # Show the effective average rates that were applied
+    eff_base = effective_avg_shield_rate(base_df, tax_bracket, standard_deduction, other_itemized)
+    eff_prepay = effective_avg_shield_rate(prepay_df, tax_bracket, standard_deduction, other_itemized)
+    st.caption(f"Effective average tax shield applied — Baseline: {eff_base:.1%} | Prepay: {eff_prepay:.1%}")
+else:
+    base_interest_after_tax = base_interest * (1 - mortgage_tax_shield)
+    prepay_interest_after_tax = prepay_interest * (1 - mortgage_tax_shield)
 
 # Investment growth of saved money
 def future_value(pmt, rate, nper):
