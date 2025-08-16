@@ -122,28 +122,29 @@ def amortization_with_tax(
     annual["Cumulative_After_Tax_Cost"] = annual["After_Tax_Cost"].cumsum()
 
     return df, annual
+   
     # Example call
-full_df, annual_df = amortization_with_tax(
-    loan_amount, annual_rate, term_years,
-    extra_monthly=extra_payment,
-    lump_sum=lump_sum,
-    lump_month=lump_sum_month,
-    tax_rate=tax_bracket,
-    standard_deduction=standard_deduction,
-    other_itemized=other_itemized
-)
+    full_df, annual_df = amortization_with_tax(
+        loan_amount, annual_rate, term_years,
+        extra_monthly=extra_payment,
+        lump_sum=lump_sum,
+        lump_month=lump_sum_month,
+        tax_rate=tax_bracket,
+        standard_deduction=standard_deduction,
+        other_itemized=other_itemized
+    )
 
-st.subheader("Annual Summary (After‑Tax)")
-st.dataframe(
-    annual_df.style.format({
-        "Interest": "${:,.0f}",
-        "Principal": "${:,.0f}",
-        "Extra": "${:,.0f}",
-        "Tax_Savings": "${:,.0f}",
-        "After_Tax_Cost": "${:,.0f}",
-        "Cumulative_After_Tax_Cost": "${:,.0f}"
-    })
-)
+    st.subheader("Annual Summary (After‑Tax)")
+    st.dataframe(
+        annual_df.style.format({
+            "Interest": "${:,.0f}",
+            "Principal": "${:,.0f}",
+            "Extra": "${:,.0f}",
+            "Tax_Savings": "${:,.0f}",
+            "After_Tax_Cost": "${:,.0f}",
+            "Cumulative_After_Tax_Cost": "${:,.0f}"
+        })
+    )
 def add_year_column(df: pd.DataFrame) -> pd.DataFrame:
     d = df.copy()
     d["Year"] = ((d["Month"] - 1) // 12) + 1
