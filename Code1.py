@@ -174,18 +174,18 @@ def net_worth_at_sale(base_df, prepay_df, principal, sell_year, sell_cost_pct, i
 # ----------------------------
 # Example: Swap for Streamlit inputs
 # ----------------------------
-principal = 300000
-annual_rate = 0.04
+principal = 100000
+annual_rate = 0.06
 years = 30
-extra_monthly = 200
+extra_monthly = 0
 lump_sum = 0
-lump_month = 1
+lump_month = 6
 tax_rate = 0.24
-standard_deduction = 14600
+standard_deduction = 30000
 other_itemized = 0
-sell_year = 10
+sell_year = 5
 sell_cost_pct = 0.06
-inv_return = 0.06
+inv_return = 0.07
 tax_drag = 0.01
 
 base_df, base_annual, prepay_df, prepay_annual = run_baseline_vs_prepay(
