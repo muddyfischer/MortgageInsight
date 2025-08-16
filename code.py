@@ -41,7 +41,7 @@ def pmt(rate, nper, pv):
     return -(pv * rate * (1 + rate)**nper) / ((1 + rate)**nper - 1)
 
 # Amortization function
-def amortization(loan, rate, term, extra_monthly=0, lump_sum=0):
+def amortization(loan, rate, term, extra_monthly=0, lump_sum=0, lump_month=1):
     monthly_rate = rate / 12
     months = term * 12
     payment = pmt(monthly_rate, months, loan)
@@ -50,9 +50,12 @@ def amortization(loan, rate, term, extra_monthly=0, lump_sum=0):
     for m in range(1, months+1):
         interest = balance * monthly_rate
         principal = payment - interest
-        if m == 1 and lump_sum > 0:
+
+        # trigger lump sum in the chosen month
+        if m == lump_month and lump_sum > 0:
             balance -= lump_sum
             principal += lump_sum
+
         balance -= (principal + extra_monthly)
         if balance < 0:
             principal += balance
@@ -98,7 +101,10 @@ def effective_avg_shield_rate(df: pd.DataFrame, tax_rate: float, std_ded: float,
 
 # Run scenarios
 base_df = amortization(loan_amount, annual_rate, term_years)
-prepay_df = amortization(loan_amount, annual_rate, term_years, extra_payment, lump_sum)
+prepay_df = amortization(
+    loan_amount, annual_rate, term_years,
+    extra_payment, lump_sum, lump_sum_month
+)
 
 # Interest savings (after tax)
 base_interest = base_df["Interest"].sum()
