@@ -42,28 +42,48 @@ def pmt(rate, nper, pv):
 
 # Amortization function
 def amortization(loan, rate, term, extra_monthly=0, lump_sum=0, lump_month=1):
+    import pandas as pd
+    
     monthly_rate = rate / 12
     months = term * 12
-    payment = pmt(monthly_rate, months, loan)
+    payment = pmt(monthly_rate, months, loan)  # keep negative for PMT convention
     balance = loan
     schedule = []
-    for m in range(1, months+1):
+
+    for m in range(1, months + 1):
         interest = balance * monthly_rate
-        principal = payment - interest
+        principal = -payment - interest  # scheduled principal only
+        extra = 0
 
-        # trigger lump sum in the chosen month
+        # Lump sum in chosen month
         if m == lump_month and lump_sum > 0:
-            balance -= lump_sum
-            principal += lump_sum
+            extra += lump_sum
 
-        balance -= (principal + extra_monthly)
-        if balance < 0:
-            principal += balance
-            balance = 0
-        schedule.append([m, interest, principal, balance])
+        # Monthly extra
+        if extra_monthly > 0:
+            extra += extra_monthly
+
+        # Cap on final payment
+        if principal + extra > balance:
+            extra = balance - principal
+            if extra < 0:
+                principal += extra  # reduce principal instead if extra goes negative
+                extra = 0
+
+        balance -= principal + extra
+
+        schedule.append([
+            m,
+            round(interest, 2),
+            round(principal, 2),
+            round(extra, 2),
+            round(balance, 2)
+        ])
+
         if balance <= 0:
             break
-    return pd.DataFrame(schedule, columns=["Month", "Interest", "Principal", "Balance"])
+
+    return pd.DataFrame(schedule, columns=["Month", "Interest", "Principal", "Extra", "Balance"])
 
 def add_year_column(df: pd.DataFrame) -> pd.DataFrame:
     d = df.copy()
