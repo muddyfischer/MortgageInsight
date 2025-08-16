@@ -52,7 +52,7 @@ def amortization(loan, rate, term, extra_monthly=0, lump_sum=0, lump_month=1):
 
     for m in range(1, months + 1):
         interest = balance * monthly_rate
-        principal = -payment - interest  # scheduled principal only
+        principal = payment - interest  # scheduled principal only
         extra = 0
 
         # Lump sum in chosen month
