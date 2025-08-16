@@ -221,3 +221,23 @@ after_tax_interest_saved = (
 print(f"\nMonths Saved: {months_saved}")
 print(f"Interest Saved: ${interest_saved:,.0f}")
 print(f"After-tax Interest Saved: ${after_tax_interest_saved:,.0f}")
+
+
+st.subheader("Net Worth at Sale (by Appreciation Rate)")
+st.dataframe(sale_df.style.format({"Appreciation":"{:.0%}", "Net Worth (Invest)":"${:,.0f}", "Net Worth (Prepay)":"${:,.0f}"}))
+
+st.subheader("Amortization Schedules")
+tabs = st.tabs(["Baseline", "Prepay"])
+with tabs[0]:
+    st.dataframe(base_df)
+with tabs[1]:
+    st.dataframe(prepay_df)
+
+# Plot loan balances
+chart_df = pd.DataFrame({
+    "Month": base_df["Month"],
+    "Baseline Balance": base_df["Balance"]
+})
+chart_df = chart_df.merge(prepay_df[["Month", "Balance"]].rename(columns={"Balance": "Prepay Balance"}), on="Month", how="outer")
+chart_df = chart_df.fillna(method="ffill")
+st.line_chart(chart_df.set_index("Month"))
