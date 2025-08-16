@@ -145,6 +145,53 @@ def amortization_with_tax(
             "Cumulative_After_Tax_Cost": "${:,.0f}"
         })
     )
+
+def run_baseline_vs_prepay(
+    loan, rate, term,
+    extra_monthly=0, lump_sum=0, lump_month=1,
+    tax_rate=0.24, standard_deduction=14600, other_itemized=0
+):
+    # Baseline run
+    baseline_df, _ = amortization_with_tax(
+        loan, rate, term,
+        tax_rate=tax_rate,
+        standard_deduction=standard_deduction,
+        other_itemized=other_itemized
+    )
+    baseline_monthly = baseline_df["Interest"] + baseline_df["Principal"] + baseline_df["Extra"]
+
+    # Prepay run
+    prepay_df, _ = amortization_with_tax(
+        loan, rate, term,
+        extra_monthly=extra_monthly,
+        lump_sum=lump_sum,
+        lump_month=lump_month,
+        tax_rate=tax_rate,
+        standard_deduction=standard_deduction,
+        other_itemized=other_itemized
+    )
+    prepay_monthly = prepay_df["Interest"] + prepay_df["Principal"] + prepay_df["Extra"]
+
+    # Comparison
+    comparison_df = compare_cumulative_after_tax(
+        baseline_monthly, prepay_monthly, tax_rate
+    )
+
+    return baseline_df, prepay_df, comparison_df
+
+baseline_df, prepay_df, comparison_df = run_baseline_vs_prepay(
+    loan_amount, annual_rate, term_years,
+    extra_monthly=extra_payment,
+    lump_sum=lump_sum,
+    lump_month=lump_sum_month,
+    tax_rate=tax_bracket,
+    standard_deduction=standard_deduction,
+    other_itemized=other_itemized
+)
+
+st.subheader("Baseline vs. Prepay — Cumulative After‑Tax Cost")
+st.dataframe(comparison_df)
+
 def add_year_column(df: pd.DataFrame) -> pd.DataFrame:
     d = df.copy()
     d["Year"] = ((d["Month"] - 1) // 12) + 1
