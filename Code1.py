@@ -1,7 +1,15 @@
 import pandas as pd
 import numpy as np
-import numpy_financial as npf
 import streamlit as st
+
+# ----------------------------
+# Custom PMT (no numpy_financial needed)
+# ----------------------------
+def pmt(rate, nper, pv):
+    """Monthly payment for a loan."""
+    if rate == 0:
+        return -(pv / nper)
+    return -(pv * rate * (1 + rate)**nper) / ((1 + rate)**nper - 1)
 
 # ----------------------------
 # Core amortization with tax logic
@@ -13,7 +21,7 @@ def amortization_with_tax(
 ):
     monthly_rate = annual_rate / 12
     months = years * 12
-    monthly_payment = npf.pmt(monthly_rate, months, -principal)
+    monthly_payment = pmt(monthly_rate, months, principal)
     balance = principal
     records = []
 
