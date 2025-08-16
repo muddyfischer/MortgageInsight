@@ -14,6 +14,12 @@ with col1:
     term_years = st.number_input("Term (years)", 1, 40, 30)
     extra_payment = st.number_input("Extra Monthly Payment ($)", 0, 5000, 200)
     lump_sum = st.number_input("One-time Extra Payment ($)", 0, 500000, 0)
+    lump_sum_month = st.number_input(
+    "Month to apply one‑time extra payment",
+    min_value=1,
+    max_value=term_years * 12,
+    value=1
+)
 with col2:
     inv_return = st.number_input("Investment Return (%)", 0.0, 20.0, 6.0) / 100
     tax_drag = st.number_input("Investment Tax Drag (%)", 0.0, 20.0, 1.0) / 100
