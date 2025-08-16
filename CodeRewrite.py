@@ -99,8 +99,8 @@ sale_month = sale_year * 12
 home_value = loan * (1 + appreciation)**sale_year
 
 # Net worth
-nw_base = net_worth_at_sale(base, sale_month, home_value, invest_rate, extra_monthly + (lump_sum if lump_month > 0 else 0))
-nw_prepay = net_worth_at_sale(prepay, sale_month, home_value, invest_rate, 0)
+nw_base = net_worth_at_sale(base, sale_month, home_value, invest_rate, 0)
+nw_prepay = net_worth_at_sale(prepay, sale_month, home_value, invest_rate, extra_monthly + (lump_sum if lump_month > 0 else 0))
 
 # --- Results ---
 st.header("📊 Results")
