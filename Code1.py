@@ -2,6 +2,37 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
+st.set_page_config(page_title="Mortgage Prepay vs Invest Calculator", layout="wide")
+
+st.title("🏠 Mortgage Prepayment vs Investment Impact")
+
+# Inputs
+col1, col2 = st.columns(2)
+with col1:
+    loan_amount = st.number_input("Loan Amount ($)", 10000, 2000000, 300000)
+    annual_rate = st.number_input("Mortgage Interest Rate (%)", 0.1, 15.0, 4.0) / 100
+    term_years = st.number_input("Term (years)", 1, 40, 30)
+    extra_payment = st.number_input("Extra Monthly Payment ($)", 0, 5000, 200)
+    lump_sum = st.number_input("One-time Extra Payment ($)", 0, 500000, 0)
+    lump_sum_month = st.number_input(
+    "Month to apply one‑time extra payment",
+    min_value=1,
+    max_value=term_years * 12,
+    value=1
+)
+with col2:
+    inv_return = st.number_input("Investment Return (%)", 0.0, 20.0, 6.0) / 100
+    tax_drag = st.number_input("Investment Tax Drag (%)", 0.0, 20.0, 1.0) / 100
+     # New: helper controls
+    use_auto_shield = st.checkbox("Estimate mortgage tax shield automatically", value=True)
+    tax_bracket = st.number_input("Marginal Tax Rate (%)", 0.0, 60.0, 24.0) / 100
+    standard_deduction = st.number_input("Standard Deduction ($)", 0, 500000, 0)
+    other_itemized = st.number_input("Other Itemized Deductions (excluding mortgage interest) ($)", 0, 1000000, 0)
+     # Keep your manual override if helper is off
+    mortgage_tax_shield = st.number_input("Mortgage Interest Tax Shield (%)", 0.0, 50.0, 0.0) / 100
+    
+    sell_year = st.number_input("Sell after X years", 1, term_years, 10)
+    sell_cost_pct = st.number_input("Selling Costs (%)", 0.0, 20.0, 6.0) / 100
 
 # ----------------------------
 # Custom PMT (no numpy_financial needed)
