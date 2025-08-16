@@ -37,8 +37,8 @@ with col2:
 # Custom PMT function
 def pmt(rate, nper, pv):
     if rate == 0:
-        return -(pv / nper)
-    return -(pv * rate * (1 + rate)**nper) / ((1 + rate)**nper - 1)
+        return pv / nper
+    return (pv * rate * (1 + rate)**nper) / ((1 + rate)**nper - 1) # positive
 
 # Amortization function
 def amortization(loan, rate, term, extra_monthly=0, lump_sum=0, lump_month=1):
