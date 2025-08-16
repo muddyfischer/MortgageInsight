@@ -126,6 +126,6 @@ st.line_chart(chart_df)
 
 # Expanders for detail
 with st.expander("Amortization Table (Prepay)"):
-    st.dataframe(prepay)
+    st.dataframe(prepay.style.format("{:,.0f}"))
 with st.expander("Amortization Table (Baseline)"):
     st.dataframe(base)
