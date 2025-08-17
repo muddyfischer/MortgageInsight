@@ -74,19 +74,19 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("Loan Parameters")
-    loan = st.number_input("Loan Amount", 100000, 2000000, 400000, step=5000)
-    rate = st.number_input("Interest Rate (%)", 1.0, 15.0, 6.0, step=0.1)/100
+    loan = st.number_input("Loan Amount", 100000, 20000000, 100000, step=5000)
+    rate = st.number_input("Interest Rate (%)", 1.0, 15.0, 6.0, step=0.025)/100
     years = st.number_input("Term (years)", 10, 40, 30)
     tax_rate = st.number_input("Tax Shield (%)", 0, 50, 24, step=1)/100
 
     st.subheader("Prepayment Options")
-    extra_monthly = st.number_input("Extra Monthly Payment", 0, 5000, 200)
-    lump_sum = st.number_input("Lump Sum Payment", 0, 500000, 10000)
-    lump_month = st.number_input("Lump Sum Month", 0, years*12, 12)
+    extra_monthly = st.number_input("Extra Monthly Payment", 0, 50000, 0)
+    lump_sum = st.number_input("Lump Sum Payment", 0, 500000, 5000)
+    lump_month = st.number_input("Lump Sum Month", 0, years*12, 6)
 
 with col2:
     st.subheader("Investment Assumptions")
-    invest_rate = st.number_input("Annual Investment Return (%)", 0.0, 15.0, 6.0, step=0.1)/100
+    invest_rate = st.number_input("Annual Investment Return (%)", 0.0, 15.0, 6.0, step=0.025)/100
     sale_year = st.number_input("Sale Year", 1, years, 10)
     appreciation = st.number_input("Annual Home Appreciation (%)", -10.0, 15.0, 3.0, step=0.1)/100
 
