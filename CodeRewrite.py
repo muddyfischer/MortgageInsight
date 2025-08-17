@@ -91,7 +91,7 @@ with col2:
     appreciation = st.number_input("Annual Home Appreciation (%)", -10.0, 15.0, 3.0, step=0.1)/100
 
 # --- Run Scenarios ---
-base = amortization_with_tax(loan, rate, years, tax_rate, 0, 0, 0)
+base = amortization_with_tax(loan, rate, years, tax_rate)
 prepay = amortization_with_tax(loan, rate, years, tax_rate, extra_monthly, lump_sum, lump_month)
 
 # Sale price projection
